@@ -1,0 +1,116 @@
+---
+title: "Financial Modeling - Amazon"
+author: "Kevin Mendonsa"
+date: "November 13, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+## Unit 11: Modeling Financial Data
+
+
+### Install required packages
+
+- install.packages("tseries")
+
+- install.packages("fpp")
+
+
+### Load the libraries
+
+```{r load_libraries}
+library(tseries)
+
+library(fpp)
+```
+
+### S&P 500 (^GSPC)
+####    SNP - SNP Real Time Price. Currency in USD
+
+### TODO: Download the data of SP500 '^gspc'.
+
+```{r get_stock_data}
+SNPdata <- get.hist.quote("amzn",quote="Close")
+```
+
+### Calculate the log returns, which is the subtraction of log(lag(SNPdata)) and log(SNPdata)
+
+```{r log_returns}
+SNPret <- log(lag(SNPdata)) - log(SNPdata)
+```
+
+### Calculate volatility measure that is to multiply sd(SNPret),sqrt(250), 100
+#### 250 is the number of days the stock market is open in a year
+
+```{r volatility_measure}
+SNPvol <- sd(SNPret) * sqrt(250) * 100
+```
+
+### Define getVol function for volatility
+
+```{r create_getVol_function}
+getVol <- function(d, logrets) {
+                              	var = 0
+                              	lam = 0
+                              	varlist <- c()
+                              
+                              	for (r in logrets) {
+                                                		lam = lam*(1 - 1/d) + 1
+                                                	  var = (1 - 1/lam)*var + (1/lam)*r^2
+                                                		varlist <- c(varlist, var)
+                                                	 }
+                              
+                              	sqrt(varlist)
+                              }
+```
+
+
+### Calculate volatility over entire length of series for three different decay factors: 10, 30, 100
+
+### Call the getVol function with the parameters: 10,SNPret
+
+```{r decay_factor_10}
+volest <- getVol(10,SNPret)
+```
+
+
+### TODO: call getVol function with the parameters: 30,SNPret
+
+```{r decay_factor_30}
+volest2 <- getVol(30,SNPret)
+```
+
+### TODO: call getVol function with the parameters: 100,SNPret
+
+```{r decay_factor_100}
+volest3 <- getVol(100,SNPret)
+```
+
+### Plot the results, overlaying the volatility curves on the data.
+
+```{r plot_volatility_curve}
+plot(volest,type="l")
+```
+
+### Add connected line segments for volest2 with the parameters: type="l",col="red"
+
+```{r add_decay_30_line}
+plot(volest,type="l")
+lines(volest2, type="l", col="red")
+```
+
+### Add connected line segments for volest3 with the parameters: type="l",col="blue"
+
+```{r add_decay_100_line}
+plot(volest,type="l")
+lines(volest2, type="l", col="red")
+lines(volest3, type="l", col="blue")
+```
+
